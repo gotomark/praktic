@@ -12,7 +12,7 @@ mongoose.connect(process.env.DB_CONNECTION,
 
 
 app.use(express.json());
-app.use('/api/user',authRoute);
+app.use('/api',authRoute);
 app.use('/api/posts',postsRoute);
 
 

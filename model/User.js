@@ -1,11 +1,15 @@
 const mongoose = require('mongoose');
 
-
 const userSchema = new mongoose.Schema({
-    name:{
+    first_name:{
         type: String,
         required: true,
-        min: 6
+        min: 3
+    },
+    last_name:{
+        type: String,
+        required: true,
+        min: 3
     },
     email:{
         type:String,
@@ -22,9 +26,13 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    additional_info:{
-        type: Array,
-        default: []
+    type_account:{
+        type:String,
+        default: ''
+    },
+    student_obj_id:{
+        type:String,
+        default: ''
     }
 });
 

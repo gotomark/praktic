@@ -1,10 +1,65 @@
 const router = require('express').Router();
 const User = require('../model/User');
-const {registerValidation,loginValidation} = require('../validation');
+const Students = require('../model/Students');
+const {registerStudentsValidation,registerEmployerValidation,loginValidation} = require('../validation');
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken');
 
-router.post('/register', async (req, res)=>{
+router.post('/students/register', async (req, res)=>{
+    const {error} = registerStudentsValidation(req.body);
+    if (error) return res.status(400).send(error)
+
+    const emailExist = await User.findOne({email: req.body.email});
+    if (emailExist) return  res.status(400).send('Email already exists')
+
+    const student = new Students({
+        birthday:req.body.birthday,
+        city:req.body.city,
+        institution:req.body.institution,
+        course:req.body.course,
+        ocr:req.body.ocr,
+        specialty:req.body.specialty,
+        additional_info:{
+            photo:req.body.photo,
+            interests:req.body.interests,
+            hobby:req.body.hobby,
+            phone:req.body.phone,
+            facebook:req.body.facebook,
+            linkedin:req.body.linkedin,
+            instagramm:req.body.instagramm
+        }
+    });
+
+    try{
+        const savedStudent = await student.save();
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(req.body.password, salt);
+        const user = new User({
+            first_name: req.body.first_name,
+            last_name:  req.body.last_name,
+            email: req.body.email,
+            password: hashedPassword,
+            type_account: '1',
+            student_obj_id: student._id
+        });
+        try{
+            const savedUser = await user.save();
+
+            res.send({user: user});
+        }catch (err) {
+            res.status(400).send(err)
+        }
+
+
+    }catch (err) {
+        res.status(400).send(err)
+    }
+
+});
+
+/*
+router.post('/employer/register', async (req, res)=>{
     const {error} = registerValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message)
 
@@ -17,20 +72,16 @@ router.post('/register', async (req, res)=>{
         name: req.body.name,
         email: req.body.email,
         password: hashedPassword,
-        additional_info: {
-            params1: "value",
-            params2: "value"
-        }
+        type_account: '2',
     });
-    
     try{
         const savedUser = await user.save();
         res.send({user: user._id});
     }catch (err) {
         res.status(400).send(err)
     }
-})
-
+});
+*/
 router.post('/login',async (req, res)=>{
     const {error} = loginValidation(req.body);
     if (error) return res.status(400).send(error.details[0].message)
